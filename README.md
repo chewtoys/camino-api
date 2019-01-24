@@ -1,26 +1,38 @@
 # Camino API
 
-> API GraphQL de [Camino](http://camino.beta.gouv.fr/)
+[![Build Status](https://travis-ci.org/MTES-MCT/camino-api.svg?branch=master)](https://travis-ci.org/MTES-MCT/camino-api)
+
+> API GraphQL de [Camino](http://camino.beta.gouv.fr/): [api.camino.beta.gouv.fr](https://api.camino.beta.gouv.fr)
 
 ---
 
 ## Technologies
 
-- Node.js
-- Express.js
-- PostgreSQL
-- Express-GraphQL
-- Knex.js
-- Objection.js
-- Eslint
-- Prettier
-- Standardjs
+- [Node.js](https://nodejs.org/)
+- [Express.js](http://expressjs.com)
+- [PostgreSQL](https://www.postgresql.org/)
+- [Express-GraphQL](https://github.com/graphql/express-graphql)
+- [Knex.js](https://knexjs.org/)
+- [Objection.js](http://vincit.github.io/objection.js/)
+- [Eslint](https://eslint.org/)
+- [Prettier](https://prettier.io/)
+- [Standardjs](https://standardjs.com/)
+- [Docker](https://www.docker.com/)
+
+---
+
+## Environnement
+
+Pour que l'application fonctionne, sont requis:
+
+- Node.js (v.10 ou plus) et npm
+- Une base de données PostgreSQL (v.10 ou plus)
 
 ---
 
 ## Configuration et imports des données
 
-- Requiert Node.js, npm et une base de données PostgreSQL.
+- Créer une base de données `camino`.
 - Renommer le fichier `.env.example` en `.env` et le compléter.
 
 ```bash
@@ -28,12 +40,15 @@
 npm install
 
 # importe les données au format .json
-# depuis google spreadsheets vers './_tools/sources'
+# depuis google spreadsheets vers './tools/sources'
 npm run import
 
 # crée les tables dans la base de données
-# et importe les données depuis './_tools/sources'
+# et importe les données depuis './tools/sources'
 npm run migrate
+
+# met à jour les données
+npm run daily
 ```
 
 ---
@@ -43,6 +58,15 @@ npm run migrate
 ```bash
 # démarre le serveur avec nodemon
 npm run dev
+```
+
+---
+
+## Tests
+
+```bash
+# lance les tests
+npm run test
 ```
 
 ---
@@ -93,9 +117,49 @@ docker-compose -f ./docker-compose.prod.yml up -d --build
 
 ---
 
+## Structure des fichiers
+
+```bash
+.
+├── index.js                    # `point d'entrée`
+│
+├── api                         # `API graphql`
+│   ├── resolvers               # `liens entre l'API et la base de données`
+│   ├── schemas                 # `description des nœuds de l'API`
+│   └── types                   # `types graphQl customs`
+│
+├── config                      #
+│   ├── index.js                # `variables globales`
+│   └── knex.js                 # `connexion à la base de données`
+│
+├── database                    # `base de données PostgresQL`
+│   ├── models                  # `modèles de la base de données (knex.js / objection.js)`
+│   └── queries                 # `requêtes à la base de données (knex.js / objection.js)`
+│
+├── docs                        # `documentation et exemples`
+│
+├── tasks                       # `logique métier`
+│   ├── _utils                  # `scripts de mise à jour de la base de données`
+│   ├── daily                   # `scripts quotidiens (npm run daily)`
+│   └── etape-update            # `script effectués lors de la mise à jour d'une étape`
+│
+└── tools                       # `outils`
+    ├── export                  # `exportation de la base de données vers des spreadsheets (npm run export)`
+    ├── import                  # `import de spreadsheets vers des fichiers json dans /sources (npm run import)`
+    ├── knex                    # `scripts de création et d'import de la base de données (npm run migrate)`
+    │   ├── migrations          # `création de la base de données`
+    │   └── seeds               # `import depuis les fichier /sources vers la base de données`
+    ├── mailer                  # `utilitaire d'envoi d'email (Nodemailer)`
+    ├── sources                 # `données sources sous forme de fichiers json`
+    └── utils                   #
+
+```
+
+---
+
 ## PostgreSQL
 
-![camino database schema](_docs/camino-db.png)
+![camino database schema](docs/db/camino-db.png)
 
 ---
 

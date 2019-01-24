@@ -13,11 +13,10 @@ RUN cd /tmp && npm install && cp -a /tmp/node_modules $dir/
 COPY .env ./
 COPY package*.json ./
 COPY index.js ./
-COPY auth auth/
 COPY config config/
-COPY graphql graphql/
-COPY postgres postgres/
-COPY _tools _tools/
+COPY api api/
+COPY database database/
+COPY tools tools/
 COPY tasks tasks/
 
 CMD ["npm", "start"]

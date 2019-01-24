@@ -9,18 +9,28 @@
  */
 
 require('dotenv').config()
-require('./postgres')
+require('./database/index')
 const chalk = require('chalk')
 const express = require('express')
 const cors = require('cors')
 const compression = require('compression')
 const graphqlHTTP = require('express-graphql')
 const expressJwt = require('express-jwt')
-const { env, port, url, jwtSecret } = require('./config')
-const schema = require('./graphql/schemas')
-const rootValue = require('./graphql/resolvers')
+const Sentry = require('@sentry/node')
+
+const { port, url } = require('./config/index')
+const schema = require('./api/schemas')
+const rootValue = require('./api/resolvers')
 
 const app = express()
+
+if (process.env.SENTRY_DSN) {
+  Sentry.init({
+    dsn: process.env.SENTRY_DSN
+  })
+
+  app.use(Sentry.Handlers.requestHandler())
+}
 
 app.use(cors({ credentials: true }))
 
@@ -29,13 +39,18 @@ app.use(compression())
 app.use(
   expressJwt({
     credentialsRequired: false,
-    secret: jwtSecret || 'jwtSecret should be declared in .env'
+    secret: process.env.JWT_SECRET || 'jwtSecret should be declared in .env'
   })
   // (err, req, res, next) => {
   //   if (err.code === 'invalid_token') return next()
   //   return next()
   // }
 )
+
+// app.get('/', (req, res) => {
+//   console.log('broke')
+//   throw new Error('Broke!')
+// })
 
 app.use(
   '/',
@@ -56,9 +71,16 @@ app.use(
   }))
 )
 
+if (process.env.SENTRY_DSN) {
+  app.use(Sentry.Handlers.errorHandler())
+}
+
 app.listen(port, () => {
   console.log(' ')
   console.log(chalk.bgWhiteBright.black.bold('> Url: ' + url + ' '))
-  console.log(chalk.bgWhiteBright.black.bold('> Env: ' + env + ' '))
+  console.log(chalk.bgWhiteBright.black.bold('> ENV: ' + process.env.ENV + ' '))
+  console.log(
+    chalk.bgWhiteBright.black.bold('> NODE_ENV: ' + process.env.NODE_ENV + ' ')
+  )
   console.log(' ')
 })
